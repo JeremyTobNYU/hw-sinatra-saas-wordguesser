@@ -39,32 +39,25 @@ class WordGuesserApp < Sinatra::Base
   # If a guess is repeated, set flash[:message] to "You have already used that letter."
   # If a guess is invalid, set flash[:message] to "Invalid guess."
   post '/guess' do
-    game = session[:game]
     letter = params[:guess].to_s[0] || ""
 
     begin
-      if game.guesses.include?(letter) || game.wrong_guesses.include?(letter)
-        session[:message] = "You have already used that letter."
+      if @game.guesses.include?(letter) || @game.wrong_guesses.include?(letter)
+        flash[:message] = "You have already used that letter."
       else
-        game.guess(letter)
-        session[:message] = nil
+        @game.guess(letter)
       end
     rescue ArgumentError
-      session[:message] = "Invalid guess."
+      flash[:message] = "Invalid guess."
     end
 
     redirect '/show'
-  end  
-  # Everytime a guess is made, we should eventually end up at this route.
+  end  # Everytime a guess is made, we should eventually end up at this route.
   # Use existing methods in WordGuesserGame to check if player has
   # won, lost, or neither, and take the appropriate action.
   # Notice that the show.erb template expects to use the instance variables
   # wrong_guesses and word_with_guesses from @game.
   get '/show' do
-    @game = session[:game]
-    @message = session[:message]
-    session[:message] = nil
-    
     if @game.nil?
       redirect '/new'
     elsif @game.check_win_or_lose == :win
@@ -75,7 +68,6 @@ class WordGuesserApp < Sinatra::Base
       erb :show
     end
   end
-
   get '/win' do
     @game = session[:game]
 
