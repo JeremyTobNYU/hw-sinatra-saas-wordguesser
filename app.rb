@@ -39,19 +39,22 @@ class WordGuesserApp < Sinatra::Base
   # If a guess is repeated, set flash[:message] to "You have already used that letter."
   # If a guess is invalid, set flash[:message] to "Invalid guess."
   post '/guess' do
+    game = session[:game]
     letter = params[:guess].to_s[0] || ""
-    @game = session[:game]
 
-    if @game.guesses.include?(letter) || @game.wrong_guesses.include?(letter)
-      @message = "You have already used that letter."
-    else
-      @game.guess(letter)
+    begin
+      if game.guesses.include?(letter) || game.wrong_guesses.include?(letter)
+        session[:message] = "You have already used that letter."
+      else
+        game.guess(letter)
+        session[:message] = nil
+      end
+    rescue ArgumentError
+      session[:message] = "Invalid guess."
     end
 
-    session[:game] = @game
     redirect '/show'
-  end
-  
+  end  
   # Everytime a guess is made, we should eventually end up at this route.
   # Use existing methods in WordGuesserGame to check if player has
   # won, lost, or neither, and take the appropriate action.
