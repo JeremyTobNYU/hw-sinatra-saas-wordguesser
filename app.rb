@@ -59,11 +59,15 @@ class WordGuesserApp < Sinatra::Base
 
     if @game.nil?
       redirect '/new'
+    elsif @game.check_win_or_lose == :win
+      redirect '/win'
+    elsif @game.check_win_or_lose == :lose
+      redirect '/lose'
     else
       erb :show
     end
   end
-
+  
   get '/win' do
     @game = session[:game]
 
@@ -75,9 +79,16 @@ class WordGuesserApp < Sinatra::Base
       erb :win
     end
   end
-  
+
   get '/lose' do
-    ### YOUR CODE HERE ###
-    erb :lose # You may change/remove this line
+    @game = session[:game]
+
+    if @game.nil?
+      redirect '/new'
+    elsif @game.check_win_or_lose != :lose
+      redirect '/show'
+    else
+      erb :lose
+    end
   end
 end
